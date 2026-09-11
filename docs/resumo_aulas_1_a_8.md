@@ -5,42 +5,42 @@
 
 ### Bloco 1: Fundamentos
 
-#### Aula 1: Quem Faz o Quê? (CPU vs. GPU)
-* **Função Principal:** A CPU atua como o cérebro central (chef experiente para decisões complexas), enquanto a GPU funciona como a "fábrica" (galpão com milhares de operários executando cálculos matemáticos simultâneos).
-* **Critério de Escolha:** Tarefas lógicas vão para a CPU; processamento matemático paralelo vai para a GPU.
+#### Aula 1: Introdução às Arquiteturas de Computadores e GPUs
+* **Von Neumann vs. Harvard:** Von Neumann compartilha memória para dados e instruções (gargalo no barramento); Harvard separa as memórias para acesso simultâneo.
+* **CPU vs. GPU:** CPU focada em tarefas sequenciais complexas (poucos núcleos); GPU focada em paralelismo massivo (milhares de núcleos para matrizes e IA).
 
-#### Aula 2: Como Eles Trabalham?
-* **SIMD (Sincronia Total):** Modelo padrão da GPU onde um comando único comanda vários elementos executando a mesma instrução em dados diferentes.
-* **RISC vs. CISC:** RISC foca em instruções simples (alta eficiência energética); CISC lida com comandos complexos.
+#### Aula 2: Modelos de Processamento (SIMD, MIMD, RISC, CISC)
+* **SIMD:** Uma instrução aplicada a múltiplos dados simultaneamente (GPUs, NumPy).
+* **MIMD:** Múltiplas instruções em múltiplos dados (CPUs multi-core).
+* **RISC vs. CISC:** RISC foca em instruções simples e fixas (baixo consumo, ARM); CISC foca em instruções complexas e variáveis (x86).
 
-#### Aula 3: A Logística e a Memória
-* **O Gargalo da Rodovia:** A lentidão na transferência de dados entre a RAM e a VRAM através do barramento PCIe.
-* **Impacto na Performance:** A distância das camadas de memória (Registradores rápidos vs. VRAM lenta) determina se a GPU fica ociosa.
+#### Aula 3: Estrutura de Memória em GPUs
+* **Hierarquia:** Registradores (mais rápidos, por thread) -> Memória Compartilhada / SRAM (cache manual por bloco) -> Cache L1/L2 -> Memória Global / VRAM (alta capacidade, latência alta).
+* **O Gargalo do Barramento:** Transferências CPU <-> GPU via PCIe são o gargalo principal e devem ser minimizadas.
 
-#### Aula 4: Processos vs. Threads
-* **Processos vs. Threads:** Processos criam filiais isoladas (seguras e caras), threads compartilham o mesmo espaço (rápidas, baratas, mas vulneráveis).
-* **O GIL do Python:** Mecanismo que impede o verdadeiro paralelismo de múltiplas threads na CPU.
-* **Divergência na GPU:** Desvios condicionais ("se/senão") forçam partes do grupo a esperar, reduzindo o desempenho.
+#### Aula 4: Fundamentos de Processos e Threads
+* **Processos vs. Threads:** Processos isolam memória (contornam o GIL do Python); Threads compartilham memória (leves, mas limitadas pelo GIL em tarefas CPU-bound).
+* **Hierarquia CUDA:** Threads agrupadas em Warps (32 threads SIMD), Blocos (compartilham SRAM) e Grades (problema completo).
 
-#### Aula 5: Redes e Transferência
-* **TCP vs. UDP:** TCP prioriza a entrega segura (dados financeiros); UDP aposta na velocidade sem confirmação (streaming).
-* **Ferramentas de Transferência:** O `rsync` otimiza grandes volumes permitindo retomada de quedas, superando o `scp`.
+#### Aula 5: Protocolos de Redes e Interação com GPUs
+* **IPv4 vs. IPv6:** Esgotamento do IPv4 impulsionou o IPv6 com endereçamento massivo.
+* **TCP vs. UDP:** TCP garante entrega confiável (transferência de dados); UDP prioriza velocidade sem confirmação (telemetria).
+* **SSH e Rsync:** Essenciais para controle remoto de servidores de GPU e sincronização de datasets.
 
-#### Aula 6: Linux e Gerenciamento de GPU
-* **Sessões Persistentes:** Ferramentas como `screen` e `tmux` protegem treinamentos de interrupções por quedas de conexão SSH.
-* **Automação:** O `cron` (agendamento) combinado com o `systemd` (serviços contínuos) garante a estabilidade da infraestrutura.
+#### Aula 6: Sistemas Operacionais Linux e GPU
+* **Estrutura Virtual:** Uso de `/dev`, `/proc` e `/sys` para interagir com o kernel e estado das GPUs.
+* **Automação:** Uso combinado de `cron` para tarefas agendadas e `systemd` para serviços contínuos, além de sessões persistentes com `tmux` e `screen`.
 
 ---
 
 ### Bloco 2: Programação e Otimização
 
 #### Aula 7: Introdução ao Modelo CUDA
-* **O Conceito de Kernel:** Funções executadas em paralelo por milhares de threads diretamente na GPU.
-* **Hierarquia:** Grade (`Grid`), Blocos (`Blocks`) e Threads individuais.
-* **Sincronização:** `cuda.synchronize()` assegura que cálculos na VRAM terminaram antes de voltar à CPU.
+* **Kernels:** Funções executadas em paralelo por milhares de threads diretamente na VRAM.
+* **Índices Globais:** Combinação de `blockIdx`, `blockDim` e `threadIdx` para mapear dados unicamente.
+* **Sincronização:** `cuda.synchronize()` garante a conclusão dos cálculos na GPU antes de retornar os dados para a CPU.
 
 #### Aula 8: Manipulação de Memória em CUDA (Tiling)
-* **A Regra 90/10:** 90% do tempo de execução de um algoritmo de I.A. é gasto em acessos à memória.
-* **Memória Compartilhada (Shared Memory):** Cache manual ultra rápido compartilhado entre threads do mesmo bloco.
-* **Tiling:** Técnica de carregar pedaços (`tiles`) da VRAM para a Memória Compartilhada para aliviar o tráfego de dados.
-* **Coalescing:** Acessos consecutivos otimizam as transações da GPU. Acessos espalhados geram lentidão severa.
+* **Regra 90/10:** 90% do tempo de processamento em I.A. é gasto em acessos à memória.
+* **Tiling:** Técnica de carregar pedaços de dados da VRAM para a Memória Compartilhada rápida, permitindo reutilização e eliminando o gargalo de largura de banda.
+* **Coalescing:** Acessos consecutivos à memória unificados em transações eficientes.
