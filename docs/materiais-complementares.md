@@ -30,3 +30,7 @@ https://www.youtube.com/watch?v=7Cnj2eEDvH4
 01 - https://orango.senac.br/
 02 - Fundamentos de Linguagem Python - Do Básico a Aplicações de IA
 https://www.datascienceacademy.com.br/cursosgratuitos
+
+### Geral
+01 - Gemini Estudante por 1 ano
+https://gemini.google.com/students
