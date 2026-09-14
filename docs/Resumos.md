@@ -44,3 +44,46 @@
 * **Regra 90/10:** 90% do tempo de processamento em I.A. é gasto em acessos à memória.
 * **Tiling:** Técnica de carregar pedaços de dados da VRAM para a Memória Compartilhada rápida, permitindo reutilização e eliminando o gargalo de largura de banda.
 * **Coalescing:** Acessos consecutivos à memória unificados em transações eficientes.
+
+#### Aula 9: Alternativas ao CUDA: OpenCL
+*## 1. Contextualização e Suporte
+* **Objetivo:** Viabilizar computação paralela multiplataforma e heterogênea.
+* **Cenário de Negócio:** Atender clientes com datacenters baseados em GPUs AMD e Intel (incompatíveis com CUDA).
+* **Suporte por Fabricante:**
+  * **NVIDIA:** OpenCL 3.0 (suportado, mas com preferência por CUDA).
+  * **AMD:** OpenCL 3.0 (suportado nativamente via ROCm).
+  * **Intel:** OpenCL 3.0 (CPU, GPU integrada e Arc).
+  * **Apple:** OpenCL 1.2 (*deprecated* / descontinuado em favor do Metal).
+  * **Qualcomm:** OpenCL 2.0 (GPUs mobile / Snapdragon).
+
+## 2. Arquitetura e Componentes do OpenCL
+* **Platform:** Conjunto de drivers do fabricante do hardware.
+* **Device:** Unidade física de processamento (CPU, GPU, FPGA, DSP).
+* **Context:** Gerenciador que agrupa dispositivos, buffers de memória e filas.
+* **Command Queue:** Fila de despacho de operações (kernels e cópias de dados).
+* **Kernel OpenCL:** Função escrita em C99 compilada em tempo de execução (*JIT*).
+* **Buffer:** Área de memória alocada explicitamente no dispositivo (`cl.Buffer`).
+
+## 3. Mapeamento Lógico (CUDA vs. OpenCL)
+| Conceito | CUDA (NVIDIA) | OpenCL (Khronos) |
+| :--- | :--- | :--- |
+| **Unidade de Execução** | `thread` | `work-item` |
+| **Grupo de Execução** | `block` | `work-group` |
+| **Conjunto Completo** | `grid` | `NDRange` |
+| **ID Local** | `threadIdx.x` | `get_local_id(0)` |
+| **ID do Grupo** | `blockIdx.x` | `get_group_id(0)` |
+| **ID Global** | `cuda.grid(1)` | `get_global_id(0)` |
+| **Tamanho do Grupo** | `blockDim.x` | `get_local_size(0)` |
+| **Memória Compartilhada**| `cuda.shared.array()` | `__local float[]` |
+| **Sincronização** | `cuda.syncthreads()` | `barrier(CLK_LOCAL_MEM_FENCE)` |
+| **Memória Constante** | `__constant__` | `__constant` |
+
+## 4. Trade-offs (Portabilidade vs. Ecossistema)
+* **Vantagens:** 
+  * Portabilidade multi-vendor (NVIDIA, AMD, Intel, CPUs, FPGAs).
+  * Eliminação de *vendor lock-in*.
+  * Fallback nativo para CPU.
+* **Desvantagens:** 
+  * Código mais verboso (~3× mais longo).
+  * Compilação JIT gera latência na inicialização.
+  * Ecossistema de alto nível para Deep Learning (PyTorch/TensorFlow/cuDNN) fortemente acoplado à NVIDIA.
