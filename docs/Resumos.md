@@ -1,4 +1,4 @@
-# Guia de Estudo e Resumo Consolidado: Aulas 1 a 8
+# Guia de Estudo e Resumo Consolidado
 ## Fundamentos de Tecnologia e Infraestrutura para I.A.
 
 ---
