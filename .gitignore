@@ -1,0 +1,44 @@
+# === Python ===
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+
+# === Ambientes Virtuais ===
+venv/
+.venv/
+env/
+.env/
+
+# === Jupyter Notebooks ===
+.ipynb_checkpoints/
+
+# === IDEs ===
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# === Sistema Operacional ===
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# === CUDA / GPU ===
+*.cubin
+*.fatbin
+*.ptx
+
+# === Dados e Modelos (grandes demais para o Git) ===
+*.h5
+*.hdf5
+*.ckpt
+*.pth
+*.onnx
+datasets/
+models/
+checkpoints/

@@ -18,3 +18,7 @@ c_np = a_np + b_np
 np_time = time.time() - start
 print(f"NumPy (SIMD): {np_time:.4f}s")
 print(f"Speedup: {seq_time / np_time:.1f}x mais rápido!")
+
+# Validação de corretude
+assert np.array_equal(np.array(c_seq), c_np), "Resultados sequencial/SIMD divergem!"
+print("✓ Resultados conferem: sequencial == SIMD")
