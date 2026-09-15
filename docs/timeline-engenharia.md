@@ -11,7 +11,7 @@
 [A1] Von Neumann/Harvard ──> [A2] SIMD/MIMD/RISC/CISC ──> [A3] Hierarquia de Memória (VRAM/PCIe)
                                                                       │
                                                                       ▼
-[A9] OpenCL Multi-Vendor <── [A8] Tiling & Coalescing <── [A7] Kernels CUDA ──> [A6] Linux Ops ──> [A5] Redes/Rsync ──> [A4] Processos/GIL
+[A10] AMD ROCm & HIP <── [A9] OpenCL Multi-Vendor <── [A8] Tiling & Coalescing <── [A7] Kernels CUDA ──> [A6] Linux Ops ──> [A5] Redes/Rsync ──> [A4] Processos/GIL
 ```
 
 ---
@@ -63,13 +63,19 @@
 ### Aula 8: Manipulação de Memória em CUDA (Tiling)
 * **Conceito/Fundamento:** Regra 90/10 (90% do tempo de processamento em IA é gasto em acessos à memória). Tiling carrega pedaços da VRAM para a Memória Compartilhada rápida para reutilização. Coalescing une acessos consecutivos em transações eficientes.
 * **O que se aprende:** A Regra 90/10, *Coalescing* (unir transações de memória global) e *Tiling* (carregar blocos de matrizes na SRAM compartilhada para reutilização local).
-* **Conexão com a Aula 7:** Pegamos o kernel da A7 e o reescrevemos com estratégia de cache manual (SRAM da A3) para eliminar o gargalo de largura de banda da VRAM.
+* **Conexão com a Aula 7:** Pegamos o kernel da A7 e o reescremos com estratégia de cache manual (SRAM da A3) para eliminar o gargalo de largura de banda da VRAM.
 * **O problema que fica em aberto:** O código é hiper-otimizado para NVIDIA (CUDA/cuDNN), mas e quando o cliente corporativo exige execução em infraestrutura AMD/Intel?
 
 ### Aula 9: Alternativas ao CUDA: OpenCL
 * **Conceito/Fundamento:** Viabilizar computação paralela multiplataforma e heterogênea para clientes com AMD/Intel. Suporte OpenCL 3.0 (NVIDIA/AMD/Intel), Apple deprecated 1.2 (Metal), Qualcomm 2.0 (Mobile). Arquitetura com *Platform*, *Device*, *Context*, *Command Queue*, kernel em C99 JIT e `cl.Buffer`. Mapeamento: thread/work-item, block/work-group, grid/NDRange, shared mem/`__local`, syncthreads/barrier, constant/`__constant`. Trade-offs: portabilidade multi-vendor sem vendor lock-in vs. código ~3x mais verboso, JIT cold start e ecossistema DL fraco.
 * **O que se aprende:** Padrão aberto do Khronos Group, hierarquia *Platform -> Device -> Context -> Command Queue*, mapeamento de `work-items`/`work-groups` e trade-offs JIT vs AOT.
 * **Conexão com a Trilha Inteira:** O aluno percebe que *não aprendeu CUDA isoladamente* — **aprendeu computação paralela de dados**. O OpenCL traduz a matriz mental de *tiling* (A8) e *kernels* (A7) para um padrão agnóstico multi-vendor.
+* **O problema que fica em aberto:** O OpenCL exige reescrever o código em C99 manual. Como rodar modelos de IA prontos em PyTorch/TensorFlow no hardware AMD mantendo alta performance de nível industrial?
+
+### Aula 10: Introdução ao ROCm e GPUs AMD
+* **Conceito/Fundamento:** Configurar e executar aplicações de IA em GPUs AMD com o ecossistema ROCm, abstraindo a portabilidade via HIP e contêineres Docker para eliminar o *vendor lock-in*.
+* **O que se aprende:** Arquitetura ROCm (`KFD`, `ROCr`, `HIP`), equivalência funcional (`rocBLAS`, `MIOpen`, `rocm-smi`), conversão via `hipify` e contêineres oficiais `rocm/pytorch`.
+* **Conexão com a Aula 9:** O OpenCL mostrou a teoria multi-vendor; a Aula 10 entrega a solução industrial de alto nível, provando que pipelines PyTorch em CUDA rodam transparentemente via HIP em GPUs AMD (como a MI300X) sem alterar o código Python.
 
 ---
 
@@ -80,4 +86,5 @@
 | **A1-A3** | "Por que meu hardware afeta a conta de luz e nuvem?" | Diagnóstico de arquitetura e escolha de hardware edge/cloud. |
 | **A4-A6** | "Como mexer no cluster remoto sem perder o job de 12h?" | Script de sync `rsync`, túnel SSH, monitoramento `nvtop`/`tmux`. |
 | **A7-A8** | "Como espremer 100% da VRAM da placa de vídeo?" | Kernel otimizado com *tiling*, *coalescing* e medição de latência. |
-| **A9** | "E se o cliente exigir rodar em cluster AMD/Intel?" | Tradução mental de paralelismo para padrão aberto agnóstico. |
+| **A9** | "E se o cliente exigir rodar em cluster AMD/Intel?" | Tradução mental de paralelismo para padrão aberto agnóstico (OpenCL). |
+| **A10** | "Como migrar um pipeline CUDA existente para GPUs AMD reduzindo custos?" | Benchmark PyTorch transparente via HIP e Docker ROCm (`rocm-smi`). |

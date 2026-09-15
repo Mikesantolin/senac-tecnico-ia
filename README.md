@@ -8,7 +8,7 @@ Repositório estruturado por aulas para o curso técnico de IA do Senac, cobrind
 Cada aula resolve o gargalo que a anterior deixou em aberto, formando uma cadeia causal completa:
 
 ```
-Silício → Modelos de Execução → Memória → Processos → Redes → Linux → CUDA → Tiling → OpenCL/LLMs
+Silício → Modelos de Execução → Memória → Processos → Redes → Linux → CUDA → Tiling → OpenCL/LLMs → ROCm/AMD
 ```
 
 ---
@@ -19,11 +19,11 @@ Silício → Modelos de Execução → Memória → Processos → Redes → Linu
 | :--- | :--- |
 | **Python** | 3.10 ou superior |
 | **NumPy** | Obrigatório (todas as aulas) |
-| **PyTorch** | Aula 3 (benchmark RAM vs VRAM) |
+| **PyTorch** | Aulas 3 e 10 (benchmarks e portabilidade) |
 | **CuPy** | Aulas 7 e 8 (FFT e estresse de GPU) |
 | **Numba** | Aula 8 (kernels CUDA com Tiling) |
 | **GPU NVIDIA** | Recomendada para Aulas 3, 7 e 8 (scripts têm fallback para CPU) |
-| **Docker** | Aula 9 (Open WebUI — opcional) |
+| **Docker** | Aulas 9 e 10 (Open WebUI e AMD ROCm / PyTorch) |
 
 ## 🚀 Instalação
 
@@ -65,6 +65,7 @@ pip install -r requirements.txt
 | **07** | Introdução ao CUDA (Kernels, CuPy FFT) | [`fft_benchmark.py`](aulas/aula07/fft_benchmark.py) |
 | **08** | Tiling e Otimização de Memória (Shared Memory) | [`tiling_benchmark.py`](aulas/aula08/tiling_benchmark.py), [`stress_nvtop.py`](aulas/aula08/stress_nvtop.py) |
 | **09** | Alternativas ao CUDA (OpenCL) + LLMs Locais | [Tutorial Ollama](aulas/aula09/hands-on-ollama.md), [Tutorial Open WebUI](aulas/aula09/hands-on-frontend-ollama.md) |
+| **10** | Introdução ao ROCm e GPUs AMD (HIP, PyTorch & Docker) | [`rocm_pytorch_benchmark.py`](aulas/aula10/rocm_pytorch_benchmark.py), [Atividades](aulas/aula10/atividade.md) |
 
 ---
 
@@ -72,7 +73,7 @@ pip install -r requirements.txt
 
 | Documento | Descrição |
 | :--- | :--- |
-| [`resumos.md`](docs/resumos.md) | Resumos teóricos consolidados de todas as 9 aulas |
+| [`resumos.md`](docs/resumos.md) | Resumos teóricos consolidados de todas as 10 aulas |
 | [`timeline-engenharia.md`](docs/timeline-engenharia.md) | Blueprint causal de engenharia: por que cada aula existe |
 | [`questionario.md`](docs/questionario.md) | 21 questões dissertativas (avaliação) |
 | [`questionario-gabarito.md`](docs/questionario-gabarito.md) | Gabarito sintetizado |
@@ -96,7 +97,8 @@ senac-tecnico-ia/
 │   ├── aula06/   → Monitoramento Linux + GPU status
 │   ├── aula07/   → FFT CPU vs GPU (CuPy)
 │   ├── aula08/   → Tiling CUDA + estresse de GPU
-│   └── aula09/   → OpenCL + Tutoriais Ollama/Docker
+│   ├── aula09/   → OpenCL + Tutoriais Ollama/Docker
+│   └── aula10/   → ROCm, HIP, Benchmark PyTorch & Docker
 └── docs/         → Resumos, questionários e materiais complementares
 ```
 

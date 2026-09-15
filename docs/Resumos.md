@@ -87,3 +87,12 @@
   * Código mais verboso (~3× mais longo).
   * Compilação JIT gera latência na inicialização.
   * Ecossistema de alto nível para Deep Learning (PyTorch/TensorFlow/cuDNN) fortemente acoplado à NVIDIA.
+
+#### Aula 10: Introdução ao ROCm e GPUs AMD
+* **Ecossistema ROCm:** Plataforma open-source da AMD para computação GPU (alternativa direta ao CUDA proprietário). Stack: Aplicação -> Framework (MIOpen, rocBLAS) -> HIP Runtime -> ROCr (HSA) -> KFD Driver -> Hardware (MI300X, RDNA3, CDNA).
+* **Camada HIP (Portabilidade):** Permite executar código CUDA em GPUs AMD com mínimas/nulas alterações. O PyTorch emula a API `torch.cuda` via HIP transparentemente.
+* **Ferramental Equivalente:**
+  * `hipcc` (nvcc), `rocBLAS` (cuBLAS), `MIOpen` (cuDNN), `rocFFT` (cuFFT), `rocRAND` (cuRAND), `rocm-smi` (nvidia-smi).
+  * Ferramenta `hipify-clang` converte kernels CUDA C/C++ para HIP C++.
+* **Containers e Prática via Docker:** Imagens oficiais `rocm/pytorch` abstraem drivers no host. Dispositivos repassados via `--device=/dev/kfd` e `--device=/dev/dri` com permissões `video` e `render`.
+* **Estratégia de Negócios:** Mitigação de *vendor lock-in*, redução de custos de infraestrutura de nuvem/hardware e análise de TCO (Total Cost of Ownership).

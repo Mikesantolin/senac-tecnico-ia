@@ -42,3 +42,5 @@ desktop.ini
 datasets/
 models/
 checkpoints/
+.context.md
+
