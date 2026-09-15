@@ -46,7 +46,7 @@
 * **Coalescing:** Acessos consecutivos à memória unificados em transações eficientes.
 
 #### Aula 9: Alternativas ao CUDA: OpenCL
-*## 1. Contextualização e Suporte
+##### 1. Contextualização e Suporte
 * **Objetivo:** Viabilizar computação paralela multiplataforma e heterogênea.
 * **Cenário de Negócio:** Atender clientes com datacenters baseados em GPUs AMD e Intel (incompatíveis com CUDA).
 * **Suporte por Fabricante:**
@@ -56,7 +56,7 @@
   * **Apple:** OpenCL 1.2 (*deprecated* / descontinuado em favor do Metal).
   * **Qualcomm:** OpenCL 2.0 (GPUs mobile / Snapdragon).
 
-## 2. Arquitetura e Componentes do OpenCL
+##### 2. Arquitetura e Componentes do OpenCL
 * **Platform:** Conjunto de drivers do fabricante do hardware.
 * **Device:** Unidade física de processamento (CPU, GPU, FPGA, DSP).
 * **Context:** Gerenciador que agrupa dispositivos, buffers de memória e filas.
@@ -64,7 +64,7 @@
 * **Kernel OpenCL:** Função escrita em C99 compilada em tempo de execução (*JIT*).
 * **Buffer:** Área de memória alocada explicitamente no dispositivo (`cl.Buffer`).
 
-## 3. Mapeamento Lógico (CUDA vs. OpenCL)
+##### 3. Mapeamento Lógico (CUDA vs. OpenCL)
 | Conceito | CUDA (NVIDIA) | OpenCL (Khronos) |
 | :--- | :--- | :--- |
 | **Unidade de Execução** | `thread` | `work-item` |
@@ -78,7 +78,7 @@
 | **Sincronização** | `cuda.syncthreads()` | `barrier(CLK_LOCAL_MEM_FENCE)` |
 | **Memória Constante** | `__constant__` | `__constant` |
 
-## 4. Trade-offs (Portabilidade vs. Ecossistema)
+##### 4. Trade-offs (Portabilidade vs. Ecossistema)
 * **Vantagens:** 
   * Portabilidade multi-vendor (NVIDIA, AMD, Intel, CPUs, FPGAs).
   * Eliminação de *vendor lock-in*.
