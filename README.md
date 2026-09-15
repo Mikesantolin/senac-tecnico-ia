@@ -1,6 +1,5 @@
 # 🧠 Tecnologia e Infraestrutura para Inteligência Artificial
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10+-yellow.svg)](https://www.python.org/)
 [![CUDA](https://img.shields.io/badge/CUDA-12.x-green.svg)](https://developer.nvidia.com/cuda-toolkit)
 
@@ -87,7 +86,6 @@ pip install -r requirements.txt
 senac-tecnico-ia/
 ├── README.md
 ├── requirements.txt
-├── LICENSE
 ├── .gitignore
 ├── aulas/
 │   ├── aula01/   → Arquitetura CPU vs GPU
@@ -102,8 +100,3 @@ senac-tecnico-ia/
 └── docs/         → Resumos, questionários e materiais complementares
 ```
 
----
-
-## 📄 Licença
-
-Este projeto está licenciado sob a [Licença MIT](LICENSE).
