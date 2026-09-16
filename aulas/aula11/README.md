@@ -1,243 +1,133 @@
-# Aula 11: Aplicação de Modelos de IA em GPUs NVIDIA e AMD
-
-## 📌 Resumo Teórico e Objetivos
-
-Nesta aula de síntese prática do Bloco 2, unificamos os conhecimentos adquiridos sobre ecossistemas GPU (CUDA, OpenCL e ROCm) aplicando-os em um experimento real de treinamento e benchmarking com **ResNet-18** e **ResNet-50**, registrando métricas objetivas com **Weights & Biases (W&B)**.
-
-### Objetivos da Aula
-1. **Comparar Ecossistemas:** Analisar o comportamento de modelos reais (PyTorch) em ambientes NVIDIA (CUDA) e AMD (ROCm/HIP).
-2. **Coleta de Métricas Objetivas:** Monitorar Throughput (imagens/s), VRAM alocada (MB), tempo por época e perda (Loss) via Weights & Biases.
-3. **Benchmarking de Operações:** Avaliar o tempo de execução e GFLOPS para operações essenciais de IA (MatMul FP32/FP16, Conv2D, CrossEntropy e FFT).
-4. **Mixed Precision (AMP FP16/BF16):** Demonstrar otimizações com `torch.cuda.amp` sem alteração de código entre CUDA e ROCm.
-5. **Relatório Estratégico:** Capacitar a elaboração de trade-offs técnicos e operacionais para decisões de infraestrutura (TCO, setup, ecossistema e riscos).
+# Aula 11: Aplicação de Modelos de IA (NVIDIA vs AMD) — Guia Prático Nivelado
 
 ---
 
-## 🛠️ Métricas-Chave para Avaliação Comparativa
+## 🎯 Objetivo da Aula (Sem Complicação!)
 
-| Métrica | Unidade | Descrição / Importância |
+Nesta aula, você vai atuar como um **consultor de tecnologia**. O seu objetivo é rodar o treinamento de um modelo de inteligência artificial (ResNet) e comparar como duas marcas de placas de vídeo (**NVIDIA** e **AMD**) se comportam.
+
+Você não precisa ser um programador experiente para esta aula! O código já está pronto. Sua missão é **executar, observar os números (métricas) e responder às perguntas de pesquisa**.
+
+---
+
+## 📊 O que significam os números que vamos medir?
+
+Imagine que treinar um modelo de IA é como fazer entregas de mercadorias:
+
+| Métrica | O que significa na prática? | Analogia simples |
 | :--- | :--- | :--- |
-| **Throughput** | `imagens/segundo` | Quantidade de amostras processadas por segundo no loop de treino/inferência. |
-| **VRAM Alocada** | `MB` ou `GB` | Memória de vídeo consumida durante os passos de *forward* e *backward*. |
-| **Tempo por Época** | `segundos` | Duração total para iterar por todo o dataset/batches programados. |
-| **Consumo Energético** | `Watts` (W) | Consumo médio via `nvidia-smi` ou `rocm-smi`. |
-| **Tempo de Setup** | `Horas` (h) | Complexidade de configuração do ambiente, drivers e dependências. |
-| **Custo Relativo** | `US$/hora` | Valor de locação de instâncias em nuvem (AWS, GCP, Azure, Lambda Labs). |
+| **Throughput (imgs/s)** | Quantas imagens o computador consegue processar por segundo. **(Quanto maior, melhor!)** | Velocidade de pacotes entregues por minuto. |
+| **VRAM Usada (MB)** | Quanta memória da placa de vídeo está sendo ocupada durante o treino. | O espaço ocupado no porta-malas do veículo. |
+| **Tempo por Época (s)** | Quanto tempo leva para o modelo ler todo o conjunto de dados uma vez. | O tempo de uma viagem completa de ida e volta. |
+| **Mixed Precision (FP16)** | Técnica que reduz o tamanho dos números usados nos cálculos para gastar menos memória. | Dobrar as caixas dentro do caminhão para caber o dobro de carga. |
 
 ---
 
-## 💻 1. Configuração de Ambiente Unificado
+## 💻 1. Executando o Script Prático no Google Colab ou WSL
 
-O PyTorch utiliza a camada **HIP** em plataformas AMD para mapear chamadas da API `torch.cuda` nativamente. O código abaixo detecta automaticamente a plataforma ativa:
+Abra o arquivo `atividade_aula11.py` ou cole o código no seu **Google Colab**. 
+
+### O Código Explicado Passo a Passo:
 
 ```python
-# Configurar ambiente unificado — detecta CUDA ou ROCm automaticamente
+# Passo 1: Importar as bibliotecas necessárias
 import torch
-import torchvision
-import platform
-import subprocess
+import torch.nn as nn
 import time
 
-def detectar_ambiente():
-    """Detecta e imprime informações do ambiente de execução."""
-    info = {
-        "sistema":  platform.system() + " " + platform.release(),
-        "python":   platform.python_version(),
-        "pytorch":  torch.__version__,
-        "cuda_ok":  torch.cuda.is_available(),
-    }
-    if info["cuda_ok"]:
-        props = torch.cuda.get_device_properties(0)
-        info["gpu_nome"]  = props.name
-        info["vram_gb"]   = props.total_memory // (1024 ** 3)
-        info["sm_count"]  = props.multi_processor_count
-        info["backend"]   = "ROCm/HIP " + (torch.version.hip or "?") \
-                             if hasattr(torch.version, "hip") and torch.version.hip \
-                             else "CUDA " + (torch.version.cuda or "?")
+# Passo 2: Descobrir automaticamente qual placa de vídeo está no computador
+def checar_placa():
+    if torch.cuda.is_available():
+        nome_gpu = torch.cuda.get_device_name(0)
+        print(f"✅ Placa de Vídeo Detectada: {nome_gpu}")
+        return "cuda"
+    else:
+        print("⚠️ Nenhuma GPU detectada. Usando o processador principal (CPU).")
+        return "cpu"
 
-    for k, v in info.items():
-        print(f"  {k:<14}: {v}")
-    return info
+dispositivo = checar_placa()
 
-print("=" * 48)
-print("  Ambiente de Treinamento")
-print("=" * 48)
-env = detectar_ambiente()
-device = "cuda" if env["cuda_ok"] else "cpu"
-print(f"\n→ Dispositivo ativo: {device.upper()}")
-```
+# Passo 3: Criar um modelo de IA simples para teste
+modelo = nn.Sequential(
+    nn.Conv2d(3, 32, kernel_size=3, padding=1),
+    nn.ReLU(),
+    nn.AdaptiveAvgPool2d((1, 1)),
+    nn.Flatten(),
+    nn.Linear(32, 10)
+).to(dispositivo)
 
----
-
-## 🏎️ 2. Benchmark de Operações Fundamentais de IA
-
-Para avaliar o desempenho raw do hardware antes de aplicar modelos complexos, utiliza-se a medição direta de operações fundamentais:
-
-```python
-# Benchmark de Operações Fundamentais de IA
-import torch, time, math
-
-device = "cuda" if torch.cuda.is_available() else "cpu"
-
-def medir(fn, warmup=3, repeticoes=20):
-    """Mede tempo médio de uma função GPU com warm-up."""
-    for _ in range(warmup):
-        fn()
-    if device == "cuda": torch.cuda.synchronize()
-    t0 = time.time()
-    for _ in range(repeticoes):
-        fn()
-    if device == "cuda": torch.cuda.synchronize()
-    return (time.time() - t0) / repeticoes * 1000  # ms
-
-N = 2048
-A = torch.randn(N, N, device=device, dtype=torch.float32)
-B = torch.randn(N, N, device=device, dtype=torch.float32)
-
-print(f"Dispositivo: {torch.cuda.get_device_name(0) if device=='cuda' else 'CPU'}")
-print(f"{'Operação':<30} {'Tempo (ms)':>12} {'GFLOPS':>10}")
-print("-" * 55)
-
-# 1. Multiplicação de matrizes (FP32)
-t = medir(lambda: torch.matmul(A, B))
-gflops = 2 * N**3 / (t/1000) / 1e9
-print(f"{'MatMul FP32 (2048×2048)':<30} {t:>11.2f}ms {gflops:>9.1f}")
-
-# 2. Multiplicação de matrizes (FP16 / mixed precision)
-Ah = A.half(); Bh = B.half()
-t = medir(lambda: torch.matmul(Ah, Bh))
-gflops = 2 * N**3 / (t/1000) / 1e9
-print(f"{'MatMul FP16 (2048×2048)':<30} {t:>11.2f}ms {gflops:>9.1f}")
-
-# 3. Convolução 2D
-conv  = torch.nn.Conv2d(256, 256, 3, padding=1).to(device)
-x_img = torch.randn(16, 256, 56, 56, device=device)
-t = medir(lambda: conv(x_img))
-print(f"{'Conv2D 256ch 56×56 (bs=16)':<30} {t:>11.2f}ms {'N/A':>9}")
-
-# 4. Softmax + CrossEntropy
-logits = torch.randn(512, 1000, device=device)
-labels = torch.randint(0, 1000, (512,), device=device)
-ce = torch.nn.CrossEntropyLoss()
-t = medir(lambda: ce(logits, labels))
-print(f"{'CrossEntropy 512×1000':<30} {t:>11.2f}ms {'N/A':>9}")
-
-# 5. FFT
-sinal = torch.randn(32, 2**16, device=device)
-t = medir(lambda: torch.fft.fft(sinal))
-print(f"{'FFT batch=32, N=65536':<30} {t:>11.2f}ms {'N/A':>9}")
-```
-
-### Resultados Ilustrativos de Referência
-
-| Operação | NVIDIA T4 (CUDA) | AMD MI300X (ROCm) | Speedup AMD |
-| :--- | :---: | :---: | :---: |
-| **MatMul FP32 (2048×2048)** | 18.4 ms | 4.1 ms | **4.5×** |
-| **MatMul FP16 (2048×2048)** | 9.1 ms | 1.8 ms | **5.1×** |
-| **Conv2D 256ch 56×56** | 3.2 ms | 1.1 ms | **2.9×** |
-| **CrossEntropy 512×1000** | 0.4 ms | 0.2 ms | **2.0×** |
-| **FFT batch=32, N=65536** | 1.8 ms | 0.6 ms | **3.0×** |
-
----
-
-## 📈 3. Treinamento Otimizado com Mixed Precision (AMP) e W&B
-
-O trecho a seguir integra o monitoramento ao vivo via Weights & Biases e a otimização de memória por `torch.cuda.amp`:
-
-```python
-import wandb
-import torch, torchvision.models as models
-import torch.nn as nn, time
-
-# Inicialização do rastreamento
-wandb.init(
-    project = "aula11-cuda-vs-rocm",
-    name    = f"resnet18-{'rocm' if hasattr(torch.version, 'hip') and torch.version.hip else 'cuda'}",
-    config  = {
-        "arquitetura" : "ResNet-18",
-        "batch_size"  : 64,
-        "lr"          : 1e-3,
-        "epochs"      : 5,
-        "dispositivo" : torch.cuda.get_device_name(0) if torch.cuda.is_available() else "CPU",
-        "backend"     : "ROCm" if (hasattr(torch.version,"hip") and torch.version.hip) else "CUDA",
-    }
-)
-
-device = "cuda" if torch.cuda.is_available() else "cpu"
-modelo = models.resnet18(weights=None).to(device)
-criterio   = nn.CrossEntropyLoss()
-otimizador = torch.optim.Adam(modelo.parameters(), lr=1e-3)
-scaler     = torch.cuda.amp.GradScaler()
-
-for epoch in range(1, 6):
-    modelo.train()
-    perdas, throughputs = [], []
+# Passo 4: Função para treinar o modelo e medir a velocidade
+def simular_treinamento(usar_mixed_precision=False):
+    modo = "Otimizado (FP16)" if usar_mixed_precision else "Padrão (FP32)"
+    print(f"\n🚀 Iniciando treino no modo: {modo}")
     
-    for _ in range(30):
-        imgs   = torch.randn(64, 3, 224, 224, device=device)
-        labels = torch.randint(0, 10, (64,), device=device)
+    otimizador = torch.optim.SGD(modelo.parameters(), lr=0.01)
+    criterio = nn.CrossEntropyLoss()
+    scaler = torch.cuda.amp.GradScaler() if usar_mixed_precision else None
 
-        t0 = time.time()
-        otimizador.zero_grad(set_to_none=True)
-        
-        with torch.cuda.amp.autocast():
-            out  = modelo(imgs)
-            loss = criterio(out, labels)
+    t0 = time.time()
+    
+    # Simula o treinamento com 50 lotes de imagens fictícias
+    for lote in range(50):
+        imagens = torch.randn(64, 3, 224, 224, device=dispositivo)
+        etiquetas = torch.randint(0, 10, (64,), device=dispositivo)
 
-        scaler.scale(loss).backward()
-        scaler.step(otimizador)
-        scaler.update()
+        otimizador.zero_grad()
 
-        if device == "cuda": torch.cuda.synchronize()
-        t_batch = time.time() - t0
-        
-        perdas.append(loss.item())
-        throughputs.append(64 / t_batch)
+        if usar_mixed_precision:
+            with torch.cuda.amp.autocast():
+                saida = modelo(imagens)
+                perda = criterio(saida, etiquetas)
+            scaler.scale(perda).backward()
+            scaler.step(otimizador)
+            scaler.update()
+        else:
+            saida = modelo(imagens)
+            perda = criterio(saida, etiquetas)
+            perda.backward()
+            otimizador.step()
 
-    vram = torch.cuda.memory_allocated() // (1024**2) if device == "cuda" else 0
-    loss_med = sum(perdas) / len(perdas)
-    tp_med   = sum(throughputs) / len(throughputs)
+    tempo_total = time.time() - t0
+    imagens_processadas = 50 * 64
+    velocidade = imagens_processadas / tempo_total
+    
+    print(f"⏱️ Tempo Total: {tempo_total:.2f} segundos")
+    print(f"⚡ Velocidade (Throughput): {velocidade:.1f} imagens por segundo")
 
-    wandb.log({
-        "epoch"                 : epoch,
-        "train/loss"            : loss_med,
-        "perf/throughput_imgs_s": tp_med,
-        "mem/vram_mb"           : vram
-    })
-
-wandb.finish()
+# Executa as duas simulações
+simular_treinamento(usar_mixed_precision=False)
+simular_treinamento(usar_mixed_precision=True)
 ```
 
 ---
 
-## ⚖️ 4. Matriz Comparativa Estratégica: CUDA vs. ROCm
+## 🔍 2. Atividade de Pesquisa e Análise de Negócios
 
-| Critério | NVIDIA CUDA | AMD ROCm |
-| :--- | :--- | :--- |
-| **Maturidade do Ecossistema** | ⭐⭐⭐⭐⭐ Muito alta (padrão da indústria) | ⭐⭐⭐⭐ Alta em crescimento acelerado |
-| **Suporte PyTorch / JAX** | Nativo e otimizado via cuDNN/cuBLAS | Nativo via camada de compatibilidade HIP |
-| **Suporte TensorFlow** | Nativo | Suporte experimental / via containers |
-| **Licenciamento** | Proprietário / Fechado | Open-Source (código-fonte aberto) |
-| **Custo de Hardware / TCO** | Custo mais elevado por TFLOPS | ~30% mais barato (melhor custo/benefício) |
-| **Capacidade de VRAM** | Até 80 GB (H100) / 144 GB (H200) | Até 192 GB (Instinct MI300X) |
-| **Complexidade de Setup** | Instalação simples de drivers no host | Recomendado uso de contêineres Docker |
-| **Suporte da Comunidade** | Vasta documentação e fóruns ativos | Comunidade em expansão, mantida por AMD/Meta |
+Em duplas ou trios, pesquisem na internet e respondam às perguntas a seguir para ajudar na decisão de compra de uma empresa fictícia de tecnologia:
+
+### 📄 Cenário da Empresa:
+> A startup **"IA Entregas"** precisa contratar servidores de placa de vídeo na nuvem para treinar seus modelos pelos próximos 3 anos. O diretor financeiro quer saber se deve escolher placas **NVIDIA** ou **AMD**.
+
+### 📋 Roteiro de Pesquisa:
+
+1. **Pesquisa de Custo na Nuvem:**
+   * Pesquise o valor por hora de aluguel de uma GPU **NVIDIA T4** (ou A10G) no Google Cloud ou AWS.
+   * Pesquise sobre o preço de placas **AMD Instinct (como a MI300X)** ou placas AMD na nuvem.
+   * *Qual das marcas costuma ter um preço de aluguel por hora mais baixo?*
+
+2. **Facilidade de Uso vs Economia:**
+   * A NVIDIA usa o ecossistema **CUDA** (muito popular e fácil de instalar). A AMD usa o **ROCm**.
+   * Se uma empresa tem uma equipe técnica habituada ao ecossistema NVIDIA, qual seria o desafio operacional de mudar para AMD? O valor mais baixo da AMD compensa a necessidade de adaptação da equipe?
+
+3. **Análise dos Resultados do Código:**
+   * Ao rodar o código acima no modo **Otimizado (FP16)**, o que aconteceu com a velocidade de processamento (imagens por segundo)? 
+   * Por que usar técnicas de otimização é importante antes de gastar dinheiro comprando mais placas de vídeo?
 
 ---
 
-## 📝 Atividades Conceituais e Discussão
+## 📝 Tarefa de Casa (Relatório Simples em Word/PDF)
 
-1. **Interpretando Desempenho Isolado:** O benchmark indicou que a GPU AMD MI300X teve um throughput significativamente maior que a NVIDIA Tesla T4. Essa comparação é totalmente justa do ponto de vista arquitetural ou existem diferenças de geração/categoria entre os chips? Quais outros fatores operacionais devem ser avaliados?
-2. **Mitigação de Lock-in em Camadas Baixas:** Se o pipeline de I.A. da empresa utiliza chamadas diretas às extensões proprietárias de CUDA C (em vez das abstrações puras do PyTorch), qual é o impacto e o risco na migração para ROCm? De que forma a ferramenta `hipify` auxilia nesse processo?
-3. **Análise de Custos Ocultos de Migração:** Uma equipe composta por engenheiros treinados exclusivamente em CUDA precisa migrar para ROCm. Quais custos indiretos (treinamento, refatoração de CI/CD, tempo de homologação) devem ser contrabalançados com o menor preço do hardware AMD?
-4. **Impacto Prático de Precision Formats:** Na escolha entre FP32, FP16 e BF16 para modelos de visão computacional e LLMs, qual formato apresenta melhor equilíbrio entre consumo de VRAM e estabilidade numérica sem exigir escala de gradiente (`GradScaler`)?
+Escreva um texto curto de 1 a 2 páginas respondendo à pergunta:
+> *"Se você fosse o gerente de tecnologia, qual marca de placa de vídeo recomendaria comprar para a sua empresa hoje e por quê?"*
 
----
-
-## 📌 Tarefa de Casa (Opção Técnica)
-
-Elabore um relatório técnico formatado para apresentação ao CTO contendo:
-1. **Execução de Treinamento:** Treinar **ResNet-50** nos dois ambientes (CUDA e ROCm) com 5 épocas, `batch_size=64` e W&B ativo.
-2. **Comparativo Tabular:** Registrar Loss por época, Throughput FP32 vs. Throughput FP16, VRAM máxima consumida.
-3. **Estimativa Financeira:** Calcular o custo total para 100 épocas comparando instâncias AWS `g5.xlarge` (NVIDIA A10G) vs. opções baseadas em AMD.
-4. **Recomendação Final:** Uma síntese executiva recomendando a plataforma ideal considerando os 3 anos de ciclo de vida do projeto.
+**Dica:** Considere a facilidade de uso, o preço do hardware e os resultados observados na prática!
