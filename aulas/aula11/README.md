@@ -30,7 +30,6 @@ Abra o arquivo `atividade_aula11.py` ou cole o código no seu **Google Colab**.
 ### O Código Explicado Passo a Passo:
 
 ```python
-# Passo 1: Importar as bibliotecas necessárias
 import torch
 import torch.nn as nn
 import time
@@ -42,12 +41,12 @@ def checar_placa():
         print(f"✅ Placa de Vídeo Detectada: {nome_gpu}")
         return "cuda"
     else:
-        print("⚠️ Nenhuma GPU detectada. Usando o processador principal (CPU).")
+        print("⚠️ Nenhuma GPU detectada. Usando a CPU.")
         return "cpu"
 
 dispositivo = checar_placa()
 
-# Passo 3: Criar um modelo de IA simples para teste
+# Passo 3: O Modelo (Mantive o original)
 modelo = nn.Sequential(
     nn.Conv2d(3, 32, kernel_size=3, padding=1),
     nn.ReLU(),
@@ -63,11 +62,21 @@ def simular_treinamento(usar_mixed_precision=False):
     
     otimizador = torch.optim.SGD(modelo.parameters(), lr=0.01)
     criterio = nn.CrossEntropyLoss()
-    scaler = torch.cuda.amp.GradScaler() if usar_mixed_precision else None
+    
+    # Sintaxe do PyTorch (Agnóstica de hardware)
+    scaler = torch.amp.GradScaler('cuda') if usar_mixed_precision else None
 
+    # WARM-UP (Aquecimento)
+    # A GPU sempre é mais lenta na 1ª iteração porque precisa compilar os kernels.
+    # Rodamos um lote invisível antes de ligar o cronômetro.
+    img_warmup = torch.randn(64, 3, 224, 224, device=dispositivo)
+    lbl_warmup = torch.randint(0, 10, (64,), device=dispositivo)
+    modelo(img_warmup)
+    
+    # Sincroniza a placa de vídeo antes de iniciar o relógio!
+    if dispositivo == "cuda": torch.cuda.synchronize()
     t0 = time.time()
     
-    # Simula o treinamento com 50 lotes de imagens fictícias
     for lote in range(50):
         imagens = torch.randn(64, 3, 224, 224, device=dispositivo)
         etiquetas = torch.randint(0, 10, (64,), device=dispositivo)
@@ -75,7 +84,8 @@ def simular_treinamento(usar_mixed_precision=False):
         otimizador.zero_grad()
 
         if usar_mixed_precision:
-            with torch.cuda.amp.autocast():
+            # Sintaxe do autocast
+            with torch.amp.autocast('cuda'):
                 saida = modelo(imagens)
                 perda = criterio(saida, etiquetas)
             scaler.scale(perda).backward()
@@ -87,7 +97,10 @@ def simular_treinamento(usar_mixed_precision=False):
             perda.backward()
             otimizador.step()
 
+    # Sincroniza a GPU para garantir que ela terminou o trabalho
+    if dispositivo == "cuda": torch.cuda.synchronize()
     tempo_total = time.time() - t0
+    
     imagens_processadas = 50 * 64
     velocidade = imagens_processadas / tempo_total
     
