@@ -83,6 +83,8 @@ pip install -r requirements.txt
 | **03** | [`03_questionario.md`](docs/03_questionario.md) | Questionário de avaliação técnica |
 | **04** | [`04_questionario-gabarito.md`](docs/04_questionario-gabarito.md) | Gabarito sintetizado |
 | **05** | [`05_materiais-complementares.md`](docs/05_materiais-complementares.md) | Curadoria de links, playlists e cursos externos |
+| **06** | [`06_tutorial-instalacao-wsl.md`](docs/06_tutorial-instalacao-wsl.md) | Guia de instalação e configuração do WSL 2 no Windows 10 e 11 |
+| **07** | [`07_tutorial-instalacao-docker-wsl.md`](docs/07_tutorial-instalacao-docker-wsl.md) | Guia de instalação e uso do Docker Engine nativo no WSL 2 (Ubuntu) |
 
 ---
 
@@ -106,9 +108,11 @@ senac-tecnico-ia/
 │   ├── aula10/   → ROCm, HIP, Benchmark PyTorch & Docker
 │   └── aula11/   → Aplicação de Modelos (ResNet-18/50, W&B, AMP, CUDA vs ROCm)
 └── docs/
-    ├── 01_timeline-engenharia.md        → Blueprint causal do curso
-    ├── 02_resumos.md                    → Resumos teóricos consolidados
-    ├── 03_questionario.md               → Avaliação técnica
-    ├── 04_questionario-gabarito.md      → Gabarito de respostas
-    └── 05_materiais-complementares.md   → Links e leituras recomendadas
+    ├── 01_timeline-engenharia.md            → Blueprint causal do curso
+    ├── 02_resumos.md                        → Resumos teóricos consolidados
+    ├── 03_questionario.md                   → Avaliação técnica
+    ├── 04_questionario-gabarito.md          → Gabarito de respostas
+    ├── 05_materiais-complementares.md       → Links e leituras recomendadas
+    ├── 06_tutorial-instalacao-wsl.md        → Guia de instalação do WSL no Windows 10/11
+    └── 07_tutorial-instalacao-docker-wsl.md → Guia de instalação do Docker no WSL 2 Ubuntu
 ```
