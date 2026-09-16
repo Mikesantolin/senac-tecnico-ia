@@ -6,7 +6,7 @@
 
 Repositório estruturado por aulas para o curso técnico de IA do Senac, cobrindo desde arquitetura de computadores e hierarquia de memória até programação CUDA, benchmarking comparativo CUDA vs ROCm e deploy de LLMs locais.
 
-Cada aula resolve o gargalo que a anterior deixou em aberto, forming uma cadeia causal completa:
+Cada aula resolve o gargalo que a anterior deixou em aberto, formando uma cadeia causal completa:
 
 ```
 Silício → Modelos de Execução → Memória → Processos → Redes → Linux → CUDA → Tiling → OpenCL/LLMs → ROCm/AMD → Aplicação & Métricas
@@ -25,7 +25,7 @@ Silício → Modelos de Execução → Memória → Processos → Redes → Linu
 | **Numba** | Aula 8 (kernels CUDA com Tiling) |
 | **Weights & Biases** | Aula 11 (registro e monitoramento de experimentos em ML) |
 | **GPU NVIDIA / AMD** | Recomendada para Aulas 3, 7, 8, 10 e 11 (scripts têm fallback para CPU) |
-| **Docker** | Aulas 9 e 10 (Open WebUI e AMD ROCm / PyTorch) |
+| **Docker / WSL 2** | Aulas 9 e 10 (Open WebUI e AMD ROCm / PyTorch) |
 
 ---
 
@@ -53,7 +53,7 @@ pip install -r requirements.txt
 
 ### Bloco 1 — Fundamentos de Hardware e Infraestrutura
 
-| Aula | Tema | Scripts |
+| Aula | Tema | Scripts / Recursos |
 | :---: | :--- | :--- |
 | **01** | Arquitetura de Computadores (Von Neumann, CPU vs GPU) | [`arquitetura_cpu_gpu.py`](aulas/aula01/arquitetura_cpu_gpu.py) |
 | **02** | Modelos de Processamento (SIMD, RISC vs CISC) | [`simd_numpy.py`](aulas/aula02/simd_numpy.py) |
@@ -67,9 +67,9 @@ pip install -r requirements.txt
 | Aula | Tema | Scripts / Recursos |
 | :---: | :--- | :--- |
 | **07** | Introdução ao CUDA (Kernels, CuPy FFT) | [`fft_benchmark.py`](aulas/aula07/fft_benchmark.py) |
-| **08** | Tiling e Otimização de Memória (Shared Memory) | [`tiling_benchmark.py`](aulas/aula08/tiling_benchmark.py), [`stress_nvtop.py`](aulas/aula08/stress_nvtop.py) |
-| **09** | Alternativas ao CUDA (OpenCL) + LLMs Locais | [Tutorial Ollama](aulas/aula09/hands-on-ollama.md), [Tutorial Open WebUI](aulas/aula09/hands-on-frontend-ollama.md) |
-| **10** | Introdução ao ROCm e GPUs AMD (HIP, PyTorch & Docker) | [`rocm_pytorch_benchmark.py`](aulas/aula10/rocm_pytorch_benchmark.py), [Atividades](aulas/aula10/Atividades.md) |
+| **08** | Tiling e Otimização de Memória (Shared Memory) | [`tiling_benchmark.py`](aulas/aula08/tiling_benchmark.py), [`stress_nvtop.py`](aulas/aula08/stress_nvtop.py), [`atividade.md`](aulas/aula08/atividade.md) |
+| **09** | Alternativas ao CUDA (OpenCL) + LLMs Locais | [`atividades.md`](aulas/aula09/atividades.md), [Tutorial Ollama](aulas/aula09/hands-on-ollama.md), [Tutorial Open WebUI](aulas/aula09/hands-on-frontend-ollama.md) |
+| **10** | Introdução ao ROCm e GPUs AMD (HIP, PyTorch & Docker) | [`rocm_pytorch_benchmark.py`](aulas/aula10/rocm_pytorch_benchmark.py), [`Atividades.md`](aulas/aula10/Atividades.md), [`verificar-gpu-container/`](aulas/aula10/verificar-gpu-container), [`stressar-gpu-container/`](aulas/aula10/stressar-gpu-container) |
 | **11** | Aplicação de Modelos em GPUs NVIDIA e AMD (ResNet, W&B, AMP) | [`atividade_aula11.py`](aulas/aula11/atividade_aula11.py), [Guia da Aula](aulas/aula11/README.md) |
 
 ---
@@ -96,17 +96,38 @@ senac-tecnico-ia/
 ├── requirements.txt
 ├── .gitignore
 ├── aulas/
-│   ├── aula01/   → Arquitetura CPU vs GPU
-│   ├── aula02/   → SIMD e vetorização (NumPy)
-│   ├── aula03/   → Benchmark RAM vs VRAM (PyTorch)
-│   ├── aula04/   → Multiprocessing vs Threading
-│   ├── aula05/   → TCP/UDP + comandos de rede (scp, rsync)
-│   ├── aula06/   → Monitoramento Linux + GPU status
-│   ├── aula07/   → FFT CPU vs GPU (CuPy)
-│   ├── aula08/   → Tiling CUDA + estresse de GPU
-│   ├── aula09/   → OpenCL + Tutoriais Ollama/Docker
-│   ├── aula10/   → ROCm, HIP, Benchmark PyTorch & Docker
-│   └── aula11/   → Aplicação de Modelos (ResNet-18/50, W&B, AMP, CUDA vs ROCm)
+│   ├── aula01/
+│   │   └── arquitetura_cpu_gpu.py
+│   ├── aula02/
+│   │   └── simd_numpy.py
+│   ├── aula03/
+│   │   └── benchmark_ram_vram.py
+│   ├── aula04/
+│   │   └── processos_threads.py
+│   ├── aula05/
+│   │   ├── comandos_transferencia.sh
+│   │   └── demo_tcp_udp.py
+│   ├── aula06/
+│   │   ├── gpu_status.sh
+│   │   └── monitoramento_linux.py
+│   ├── aula07/
+│   │   └── fft_benchmark.py
+│   ├── aula08/
+│   │   ├── atividade.md
+│   │   ├── stress_nvtop.py
+│   │   └── tiling_benchmark.py
+│   ├── aula09/
+│   │   ├── atividades.md
+│   │   ├── hands-on-frontend-ollama.md
+│   │   └── hands-on-ollama.md
+│   ├── aula10/
+│   │   ├── Atividades.md
+│   │   ├── rocm_pytorch_benchmark.py
+│   │   ├── stressar-gpu-container/
+│   │   └── verificar-gpu-container/
+│   └── aula11/
+│       ├── atividade_aula11.py
+│       └── README.md
 └── docs/
     ├── 01_timeline-engenharia.md            → Blueprint causal do curso
     ├── 02_resumos.md                        → Resumos teóricos consolidados
