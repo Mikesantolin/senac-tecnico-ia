@@ -11,7 +11,10 @@
 [A1] Von Neumann/Harvard ──> [A2] SIMD/MIMD/RISC/CISC ──> [A3] Hierarquia de Memória (VRAM/PCIe)
                                                                       │
                                                                       ▼
-[A10] AMD ROCm & HIP <── [A9] OpenCL Multi-Vendor <── [A8] Tiling & Coalescing <── [A7] Kernels CUDA ──> [A6] Linux Ops ──> [A5] Redes/Rsync ──> [A4] Processos/GIL
+[A10] AMD ROCm & HIP ──> [A11] Aplicação & Métricas Comparativas CUDA vs ROCm (W&B/ResNet)
+                                                                       ▲
+                                                                       │
+[A9] OpenCL Multi-Vendor <── [A8] Tiling & Coalescing <── [A7] Kernels CUDA ──> [A6] Linux Ops ──> [A5] Redes/Rsync ──> [A4] Processos/GIL
 ```
 
 ---
@@ -76,6 +79,12 @@
 * **Conceito/Fundamento:** Configurar e executar aplicações de IA em GPUs AMD com o ecossistema ROCm, abstraindo a portabilidade via HIP e contêineres Docker para eliminar o *vendor lock-in*.
 * **O que se aprende:** Arquitetura ROCm (`KFD`, `ROCr`, `HIP`), equivalência funcional (`rocBLAS`, `MIOpen`, `rocm-smi`), conversão via `hipify` e contêineres oficiais `rocm/pytorch`.
 * **Conexão com a Aula 9:** O OpenCL mostrou a teoria multi-vendor; a Aula 10 entrega a solução industrial de alto nível, provando que pipelines PyTorch em CUDA rodam transparentemente via HIP em GPUs AMD (como a MI300X) sem alterar o código Python.
+* **O problema que fica em aberto:** Como estruturar uma avaliação quantitativa rigorosa (throughput, VRAM, custo, energia) para guiar decisões de conselho técnico/CTO na escolha dos próximos 3 anos de infraestrutura?
+
+### Aula 11: Aplicação de Modelos de IA em GPUs NVIDIA e AMD
+* **Conceito/Fundamento:** Comparar ecossistemas CUDA e ROCm na execução de modelos reais (ResNet-18/50), registrando métricas com Weights & Biases (W&B) e avaliando trade-offs técnicos e operacionais de TCO.
+* **O que se aprende:** Métricas objetivas de IA (throughput em imgs/s, VRAM em MB, tempo por época), otimização com Mixed Precision (`torch.cuda.amp` autocast/GradScaler em FP16/BF16), telemetria unificada via W&B e análise estratégica de infraestrutura.
+* **Conexão com a Aula 10:** Consolida os conhecimentos do Bloco 2. Coloca em prática a execução do mesmo modelo PyTorch em ambas as GPUs, fundamentando a decisão executiva com dados reais empíricos de desempenho, estabilidade e custo.
 
 ---
 
@@ -87,4 +96,5 @@
 | **A4-A6** | "Como mexer no cluster remoto sem perder o job de 12h?" | Script de sync `rsync`, túnel SSH, monitoramento `nvtop`/`tmux`. |
 | **A7-A8** | "Como espremer 100% da VRAM da placa de vídeo?" | Kernel otimizado com *tiling*, *coalescing* e medição de latência. |
 | **A9** | "E se o cliente exigir rodar em cluster AMD/Intel?" | Tradução mental de paralelismo para padrão aberto agnóstico (OpenCL). |
-| **A10** | "Como migrar um pipeline CUDA existente para GPUs AMD reduzindo custos?" | Benchmark PyTorch transparente via HIP e Docker ROCm (`rocm-smi`). |
+| **A10** | "Como migrar um pipeline CUDA existente para GPUs AMD reduzindo custos?" | Benchmark PyTorch transparente via HIP e Docker ROCm (`rocm-smi`). |
+| **A11** | "Como provar com dados objetivos qual ecossistema (CUDA vs ROCm) adotar?" | Treinamento ResNet com métricas de throughput/VRAM no W&B e análise de TCO. |

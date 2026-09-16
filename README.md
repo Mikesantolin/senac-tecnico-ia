@@ -2,13 +2,14 @@
 
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10+-yellow.svg)](https://www.python.org/)
 [![CUDA](https://img.shields.io/badge/CUDA-12.x-green.svg)](https://developer.nvidia.com/cuda-toolkit)
+[![ROCm](https://img.shields.io/badge/ROCm-6.x-red.svg)](https://www.amd.com/en/products/software/rocm.html)
 
-Repositório estruturado por aulas para o curso técnico de IA do Senac, cobrindo desde arquitetura de computadores e hierarquia de memória até programação CUDA e deploy de LLMs locais.
+Repositório estruturado por aulas para o curso técnico de IA do Senac, cobrindo desde arquitetura de computadores e hierarquia de memória até programação CUDA, benchmarking comparativo CUDA vs ROCm e deploy de LLMs locais.
 
-Cada aula resolve o gargalo que a anterior deixou em aberto, formando uma cadeia causal completa:
+Cada aula resolve o gargalo que a anterior deixou em aberto, forming uma cadeia causal completa:
 
 ```
-Silício → Modelos de Execução → Memória → Processos → Redes → Linux → CUDA → Tiling → OpenCL/LLMs → ROCm/AMD
+Silício → Modelos de Execução → Memória → Processos → Redes → Linux → CUDA → Tiling → OpenCL/LLMs → ROCm/AMD → Aplicação & Métricas
 ```
 
 ---
@@ -19,11 +20,14 @@ Silício → Modelos de Execução → Memória → Processos → Redes → Linu
 | :--- | :--- |
 | **Python** | 3.10 ou superior |
 | **NumPy** | Obrigatório (todas as aulas) |
-| **PyTorch** | Aulas 3 e 10 (benchmarks e portabilidade) |
+| **PyTorch** | Aulas 3, 10 e 11 (benchmarks, portabilidade e treinamento de ResNet) |
 | **CuPy** | Aulas 7 e 8 (FFT e estresse de GPU) |
 | **Numba** | Aula 8 (kernels CUDA com Tiling) |
-| **GPU NVIDIA** | Recomendada para Aulas 3, 7 e 8 (scripts têm fallback para CPU) |
+| **Weights & Biases** | Aula 11 (registro e monitoramento de experimentos em ML) |
+| **GPU NVIDIA / AMD** | Recomendada para Aulas 3, 7, 8, 10 e 11 (scripts têm fallback para CPU) |
 | **Docker** | Aulas 9 e 10 (Open WebUI e AMD ROCm / PyTorch) |
+
+---
 
 ## 🚀 Instalação
 
@@ -58,26 +62,27 @@ pip install -r requirements.txt
 | **05** | Redes e Transferência de Dados (TCP/UDP, SSH, rsync) | [`demo_tcp_udp.py`](aulas/aula05/demo_tcp_udp.py), [`comandos_transferencia.sh`](aulas/aula05/comandos_transferencia.sh) |
 | **06** | Linux e GPUs (/proc, /sys, tmux, cron) | [`monitoramento_linux.py`](aulas/aula06/monitoramento_linux.py), [`gpu_status.sh`](aulas/aula06/gpu_status.sh) |
 
-### Bloco 2 — Programação e Otimização em GPU
+### Bloco 2 — Programação, Otimização e Computação Heterogênea
 
-| Aula | Tema | Scripts |
+| Aula | Tema | Scripts / Recursos |
 | :---: | :--- | :--- |
 | **07** | Introdução ao CUDA (Kernels, CuPy FFT) | [`fft_benchmark.py`](aulas/aula07/fft_benchmark.py) |
 | **08** | Tiling e Otimização de Memória (Shared Memory) | [`tiling_benchmark.py`](aulas/aula08/tiling_benchmark.py), [`stress_nvtop.py`](aulas/aula08/stress_nvtop.py) |
 | **09** | Alternativas ao CUDA (OpenCL) + LLMs Locais | [Tutorial Ollama](aulas/aula09/hands-on-ollama.md), [Tutorial Open WebUI](aulas/aula09/hands-on-frontend-ollama.md) |
-| **10** | Introdução ao ROCm e GPUs AMD (HIP, PyTorch & Docker) | [`rocm_pytorch_benchmark.py`](aulas/aula10/rocm_pytorch_benchmark.py), [Atividades](aulas/aula10/atividade.md) |
+| **10** | Introdução ao ROCm e GPUs AMD (HIP, PyTorch & Docker) | [`rocm_pytorch_benchmark.py`](aulas/aula10/rocm_pytorch_benchmark.py), [Atividades](aulas/aula10/Atividades.md) |
+| **11** | Aplicação de Modelos em GPUs NVIDIA e AMD (ResNet, W&B, AMP) | [`atividade_aula11.py`](aulas/aula11/atividade_aula11.py), [Guia da Aula](aulas/aula11/README.md) |
 
 ---
 
 ## 📖 Documentação
 
-| Documento | Descrição |
-| :--- | :--- |
-| [`resumos.md`](docs/resumos.md) | Resumos teóricos consolidados de todas as 10 aulas |
-| [`timeline-engenharia.md`](docs/timeline-engenharia.md) | Blueprint causal de engenharia: por que cada aula existe |
-| [`questionario.md`](docs/questionario.md) | 21 questões dissertativas (avaliação) |
-| [`questionario-gabarito.md`](docs/questionario-gabarito.md) | Gabarito sintetizado |
-| [`materiais-complementares.md`](docs/materiais-complementares.md) | Curadoria de links, playlists e cursos externos |
+| Sequência | Documento | Descrição |
+| :---: | :--- | :--- |
+| **01** | [`01_timeline-engenharia.md`](docs/01_timeline-engenharia.md) | Blueprint causal de engenharia: por que cada aula existe e como se conectam |
+| **02** | [`02_resumos.md`](docs/02_resumos.md) | Resumos teóricos consolidados de todas as aulas (Aulas 1 a 11) |
+| **03** | [`03_questionario.md`](docs/03_questionario.md) | Questionário de avaliação técnica |
+| **04** | [`04_questionario-gabarito.md`](docs/04_questionario-gabarito.md) | Gabarito sintetizado |
+| **05** | [`05_materiais-complementares.md`](docs/05_materiais-complementares.md) | Curadoria de links, playlists e cursos externos |
 
 ---
 
@@ -98,7 +103,12 @@ senac-tecnico-ia/
 │   ├── aula07/   → FFT CPU vs GPU (CuPy)
 │   ├── aula08/   → Tiling CUDA + estresse de GPU
 │   ├── aula09/   → OpenCL + Tutoriais Ollama/Docker
-│   └── aula10/   → ROCm, HIP, Benchmark PyTorch & Docker
-└── docs/         → Resumos, questionários e materiais complementares
+│   ├── aula10/   → ROCm, HIP, Benchmark PyTorch & Docker
+│   └── aula11/   → Aplicação de Modelos (ResNet-18/50, W&B, AMP, CUDA vs ROCm)
+└── docs/
+    ├── 01_timeline-engenharia.md        → Blueprint causal do curso
+    ├── 02_resumos.md                    → Resumos teóricos consolidados
+    ├── 03_questionario.md               → Avaliação técnica
+    ├── 04_questionario-gabarito.md      → Gabarito de respostas
+    └── 05_materiais-complementares.md   → Links e leituras recomendadas
 ```
-

@@ -96,3 +96,15 @@
   * Ferramenta `hipify-clang` converte kernels CUDA C/C++ para HIP C++.
 * **Containers e Prática via Docker:** Imagens oficiais `rocm/pytorch` abstraem drivers no host. Dispositivos repassados via `--device=/dev/kfd` e `--device=/dev/dri` com permissões `video` e `render`.
 * **Estratégia de Negócios:** Mitigação de *vendor lock-in*, redução de custos de infraestrutura de nuvem/hardware e análise de TCO (Total Cost of Ownership).
+
+#### Aula 11: Aplicação de Modelos de IA em GPUs NVIDIA e AMD
+* **Treinamento Unificado CUDA vs. ROCm:** O PyTorch abstrai a execução de treinos em hardware NVIDIA e AMD sem necessidade de alteração no código Python (`torch.cuda` é emulado via HIP no ROCm).
+* **Métricas Objetivas de Comparação:**
+  * **Throughput (imagens/s):** Métrica primordial de produtividade em treinamento.
+  * **VRAM Alocada (MB/GB):** Consumo de memória durante os passos de *forward* e *backward*.
+  * **Tempo por Época & Custo (US$/h):** Fundamentais para a modelagem de TCO (Total Cost of Ownership).
+* **Mixed Precision (AMP FP16/BF16):** Uso de `torch.cuda.amp.autocast()` e `GradScaler` para reduzir VRAM em ~50% e aumentar throughput em até 2–3× em ambas as plataformas.
+* **Weights & Biases (W&B):** Rastreamento de experimentos de ML em dashboards comparativos unificados via tags/configurações do backend (`CUDA` vs `ROCm`).
+* **Matriz de Trade-offs para Decisão Técnica:**
+  * **NVIDIA (CUDA):** Ecossistema extremamente maduro, ecossistema cuDNN/cuBLAS consolidado, menor tempo de setup, porém maior custo por GPU.
+  * **AMD (ROCm):** 100% open-source, maior densidade de VRAM por chip (ex: MI300X com 192GB), melhor relação custo/desempenho (~30% mais barato), exigindo suporte via contêineres Docker recomendados.
